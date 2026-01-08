@@ -23,13 +23,20 @@ import (
 (h) Map 类型
 举例说明一下。
 */
-func main() {
+//
+//var a = "阿里云大学"
+//var b string = "edu.aliyun.com"
+//var c bool
+
+func main1() {
+
 	//structExample()
 	//channelExample()
 	//functionExample()
 	//sliceExample()
 	//interfaceExample()
-	mapExample()
+	//mapExample()
+	//fmt.Println(a, b, c)
 }
 func pointerExample() {
 	fmt.Println("=== 指针类型 ===")
@@ -502,6 +509,12 @@ func mapExample() {
 		},
 	}
 
+	tt := 1
+	fmt.Println("\nmap的map:", tt)
+	var a int = 10
+	var b = 10
+	c := 10
+	fmt.Println("a:", a, "b:", b, "c:", c)
 	fmt.Println("\n学生成绩:")
 	for subject, studentScores := range scores {
 		fmt.Printf("  %s:\n", subject)
@@ -509,4 +522,62 @@ func mapExample() {
 			fmt.Printf("    %s: %d\n", student, score)
 		}
 	}
+}
+
+var x, y int
+
+// 这种因式分解关键字的写法一般用于声明全局变量
+var (
+	a int
+	b bool
+)
+var c, d int = 1, 2
+var e, f = 123, "hello"
+
+func main() {
+	//这种不带声明格式的只能在函数体中出现//g, h := 123, "hello"
+	g, h := 123, "hello"
+	println(x, y, a, b, c, d, e, f, g, h)
+}
+func valueType() {
+	/*// 基本数据类型
+	bool
+	int, int8, int16, int32, int64
+	uint, uint8, uint16, uint32, uint64
+	float32, float64
+	complex64, complex128
+	string  // 注意：string是值类型，但有特殊行为
+	byte    // uint8的别名
+	rune    // int32的别名
+
+	// 复合类型
+	array      // 数组
+	struct     // 结构体*/
+	// 基本类型的值传递
+	a := 10
+	b := a // 复制值
+	b = 20
+	fmt.Println(a, b) // 输出: 10 20，a不变
+
+	// 数组的值传递
+	arr1 := [3]int{1, 2, 3}
+	arr2 := arr1 // 复制整个数组
+	arr2[0] = 100
+	fmt.Println(arr1) // [1 2 3]
+	fmt.Println(arr2) // [100 2 3]
+
+	// 结构体的值传递
+	type Point struct {
+		X, Y int
+	}
+	p1 := Point{10, 20}
+	p2 := p1 // 复制整个结构体
+	p2.X = 100
+	fmt.Println(p1) // {10 20}
+	fmt.Println(p2) // {100 20}
+
+	var f string = "abc"
+	//a := "20" //不允许
+	f = "20" //允许，因为这是给相同的变量赋予一个新的值
+	fmt.Println("hello, world", f)
 }
