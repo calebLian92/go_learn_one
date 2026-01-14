@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"time"
+	"unsafe"
 )
 
 /*
@@ -534,7 +535,7 @@ var (
 var c, d int = 1, 2
 var e, f = 123, "hello"
 
-func main() {
+func main2() {
 	//这种不带声明格式的只能在函数体中出现//g, h := 123, "hello"
 	g, h := 123, "hello"
 	println(x, y, a, b, c, d, e, f, g, h)
@@ -580,4 +581,275 @@ func valueType() {
 	//a := "20" //不允许
 	f = "20" //允许，因为这是给相同的变量赋予一个新的值
 	fmt.Println("hello, world", f)
+}
+
+const (
+	a1 = "abc"
+	b1 = len(a1)
+	c1 = unsafe.Sizeof(a1)
+)
+
+func nonBlocking() {
+	ch := make(chan string, 1)
+
+	// 非阻塞发送
+	select {
+	case ch <- "消息":
+		fmt.Println("发送成功")
+	default:
+		fmt.Println("通道已满，发送失败")
+	}
+
+	// 非阻塞接收
+	select {
+	case msg := <-ch:
+		fmt.Println("收到:", msg)
+	default:
+		fmt.Println("没有消息")
+	}
+}
+
+func multipleChannels() {
+	ch1 := make(chan int)
+	ch2 := make(chan string)
+	done := make(chan bool)
+
+	go func() {
+		for i := 0; i < 5; i++ {
+			ch1 <- i
+			time.Sleep(500 * time.Millisecond)
+		}
+		close(ch1)
+	}()
+
+	go func() {
+		messages := []string{"A", "B", "C", "D", "E"}
+		for _, msg := range messages {
+			ch2 <- msg
+			time.Sleep(300 * time.Millisecond)
+		}
+		close(ch2)
+	}()
+
+	go func() {
+		time.Sleep(3 * time.Second)
+		done <- true
+	}()
+
+	for {
+		select {
+		case num, ok := <-ch1:
+			if !ok {
+				fmt.Println("ch1 关闭")
+				ch1 = nil // 设置为 nil 后，这个 case 将不再被选中
+			} else {
+				fmt.Printf("从 ch1 收到数字: %d\n", num)
+			}
+
+		case str, ok := <-ch2:
+			if !ok {
+				fmt.Println("ch2 关闭")
+				ch2 = nil
+			} else {
+				fmt.Printf("从 ch2 收到字符串: %s\n", str)
+			}
+
+		case <-done:
+			fmt.Println("收到结束信号")
+			return
+		}
+	}
+}
+func loopWithSelect() {
+	ticker := time.NewTicker(1 * time.Second)
+	done := make(chan bool)
+
+	go func() {
+		time.Sleep(5 * time.Second)
+		done <- true
+	}()
+
+	for {
+		select {
+		case t := <-ticker.C:
+			fmt.Println("定时器触发:", t.Format("15:04:05"))
+		case <-done:
+			fmt.Println("完成")
+			ticker.Stop()
+			return
+		}
+	}
+}
+
+func testFallthrough() {
+	score := 85
+
+	fmt.Printf("分数 %d: ", score)
+	switch {
+	case score >= 90:
+		fmt.Print("优秀")
+		fallthrough // 继续执行下一个 case
+	case score >= 80:
+		fmt.Print("，良好")
+		fallthrough
+	case score >= 70:
+		fmt.Print("，中等")
+		fallthrough
+	case score >= 60:
+		fmt.Print("，及格")
+	default:
+		fmt.Print("，不及格")
+	}
+	// 输出：分数 85: ，良好，中等，及格
+}
+func swap(x, y string) (string, string) {
+	return y, x
+}
+
+func newInitialization() {
+	// new() 返回指针，并初始化为零值
+	p1 := new(int)     // *int, 指向 0
+	p2 := new(string)  // *string, 指向 ""
+	p3 := new([3]int)  // *[3]int, 指向 [0, 0, 0]
+	p4 := new(struct { // 指向结构体零值
+		x int
+		y string
+	})
+
+	*p1 = 100
+	fmt.Println(*p1, p2, *p3, *p4)
+}
+func makeInitialization() {
+	// 1. 切片初始化
+	slice1 := make([]int, 5)     // 长度=5, 容量=5: [0,0,0,0,0]
+	slice2 := make([]int, 3, 10) // 长度=3, 容量=10: [0,0,0]
+
+	// 2. 映射初始化
+	map1 := make(map[string]int)     // 空map
+	map2 := make(map[string]int, 10) // 指定初始容量
+
+	// 3. 通道初始化
+	ch1 := make(chan int)        // 无缓冲通道
+	ch2 := make(chan string, 10) // 缓冲大小为10
+
+	fmt.Println("切片:", slice1, slice2)
+	fmt.Println("映射:", map1, map2)
+	fmt.Println("通道:", ch1, ch2)
+}
+
+// 复合字面量初始化
+func compositeLiterals() {
+	// 1. 结构体初始化
+	type Point struct {
+		X, Y int
+	}
+	p1 := Point{10, 20}       // 必须按顺序
+	p2 := Point{X: 10, Y: 20} // 指定字段名
+	p3 := Point{X: 10}        // Y 使用零值: 0
+	p4 := Point{}             // X:0, Y:0
+
+	// 2. 数组初始化
+	arr1 := [3]int{1, 2, 3}      // [1, 2, 3]
+	arr2 := [3]int{1: 20, 2: 30} // [0, 20, 30]
+	arr3 := [...]int{1, 2, 3, 4} // 编译器计算长度
+
+	// 3. 切片初始化
+	slice1 := []int{1, 2, 3}
+	slice2 := []string{"a", "b", "c"}
+
+	// 4. 映射初始化
+	map1 := map[string]int{"a": 1, "b": 2}
+	map2 := map[int]string{1: "one", 2: "two"}
+
+	// 5. 接口存储具体类型
+	var iface interface{} = "hello"
+
+	fmt.Println("结构体:", p1, p2, p3, p4)
+	fmt.Println("数组:", arr1, arr2, arr3)
+	fmt.Println("切片:", slice1, slice2)
+	fmt.Println("映射:", map1, map2)
+	fmt.Println("接口:", iface)
+}
+
+func trapMultipleReturn() {
+	// 正确：同时声明多个变量
+	a, b := 1, 2
+
+	// 错误：不能重复声明
+	//a, b := 3, 4 // 编译错误：a 已声明
+
+	// 正确：只要有一个新变量就可以
+	// 至少有一个新变量就可以
+	a, c := 3, 4 // ✅ a 被重新赋值，c 是新变量
+
+	// 使用 _ 忽略某些值
+	//_, d := someFunction()
+
+	fmt.Println(a, b, c, d)
+}
+func bestPractices() {
+	// 1. 尽量使用简短声明
+	name := "Alice" // ✅ 好
+	var age = 25    // ✅ 好
+	var height int  // ⚠️ 只在需要零值时使用
+
+	// 2. 接近使用位置声明变量
+	// ✅ 好：在需要使用时声明
+	for i := 0; i < 10; i++ {
+		result := i * 2
+		fmt.Println(result)
+	}
+
+	// 3. 初始化时赋予有意义的值
+	var count int = 0       // ✅ 明确初始值
+	var total = calculate() // ✅ 立即初始化
+
+	// 4. 对于复杂类型，使用 make 预分配
+	// 如果知道大概大小，预分配可以提高性能
+	data := make([]int, 0, 100) // 长度0，容量100
+	cache := make(map[string]int, 1000)
+
+	// 5. 使用零值的优势
+	var users []User // nil 切片，可以安全 append
+
+	fmt.Println(users, data, cache, name, age, height, total, count)
+}
+
+func calculate() int {
+	return 42
+}
+
+type User struct {
+	Name string
+}
+
+func main() {
+	//println(a1, b1, c1)
+	//var a int = 4
+	//var b int32
+	//var c float32
+	//var ptr *int
+	//
+	///* 运算符实例 */
+	//fmt.Printf("第 1 行 - a 变量类型为 = %T\n", a)
+	//fmt.Printf("第 2 行 - b 变量类型为 = %T\n", b)
+	//fmt.Printf("第 3 行 - c 变量类型为 = %T\n", c)
+	//
+	///*  & 和 * 运算符实例 */
+	//ptr = &a /* 'ptr' 包含了 'a' 变量的地址 */
+	//fmt.Printf("a 的值为  %d\n", a)
+	//fmt.Printf("*ptr 为 %d\n", *ptr)
+
+	//nonBlocking()
+	//multipleChannels()
+	//loopWithSelect()
+	//testFallthrough()
+
+	//a, b := swap("Mahesh", "Kumar")
+	//fmt.Println(a, b)
+	//newInitialization()
+	//makeInitialization()
+	//compositeLiterals()
+	//trapMultipleReturn()
+	bestPractices()
 }
