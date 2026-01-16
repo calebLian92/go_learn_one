@@ -823,6 +823,183 @@ type User struct {
 	Name string
 }
 
+// =================================
+// 重要：Go 中数组是值类型！
+// 传递给函数时会发生复制
+// =================================
+
+func basicArrayPassing() {
+	// 定义一个数组
+	nums := [5]int{1, 2, 3, 4, 5}
+
+	fmt.Println("调用前:", nums)
+
+	// 传递数组给函数（会发生复制）
+	modifyArray(nums)
+
+	fmt.Println("调用后:", nums) // 仍然是 {1, 2, 3, 4, 5}
+}
+
+func modifyArray(arr [5]int) {
+	fmt.Println("函数内修改前:", arr)
+	arr[0] = 100 // 修改的是副本
+	arr[2] = 300
+	fmt.Println("函数内修改后:", arr)
+}
+
+// =================================
+// 传递多维数组
+// =================================
+func multiArrayPassing() {
+	matrix := [2][3]int{
+		{1, 2, 3},
+		{4, 5, 6},
+	}
+
+	fmt.Println("调用前 matrix:")
+	printMatrix(matrix)
+
+	// 传递二维数组（值传递，会复制）
+	modifyMatrix(matrix)
+
+	fmt.Println("调用后 matrix:")
+	printMatrix(matrix) // 原数组不变
+}
+
+func printMatrix(mat [2][3]int) {
+	for _, row := range mat {
+		fmt.Println(row)
+	}
+}
+
+func modifyMatrix(mat [2][3]int) {
+	fmt.Println("函数内修改 matrix:")
+	mat[0][0] = 100
+	mat[1][2] = 600
+	printMatrix(mat)
+}
+
+// 指针传递
+func arrayPointerPassing() {
+	// =================================
+	// 方法1：传递数组指针
+	// =================================
+	nums := [5]int{1, 2, 3, 4, 5}
+
+	fmt.Println("调用前:", nums)
+
+	// 传递数组的指针
+	modifyArrayByPointer(&nums)
+
+	fmt.Println("调用后:", nums) // 修改生效了！
+}
+
+func modifyArrayByPointer(arr *[5]int) {
+	// 通过指针修改原数组
+	(*arr)[0] = 100 // 等价于 arr[0] = 100（Go的语法糖）
+	arr[2] = 300    // Go 自动解引用
+
+	fmt.Println("函数内:", *arr)
+}
+
+// =================================
+// 传递多维数组指针
+// =================================
+func multiArrayPointerPassing() {
+	matrix := [2][3]int{
+		{1, 2, 3},
+		{4, 5, 6},
+	}
+
+	fmt.Println("调用前 matrix:")
+	printMatrix(matrix)
+
+	// 传递二维数组指针
+	modifyMatrixByPointer(&matrix)
+
+	fmt.Println("调用后 matrix:")
+	printMatrix(matrix) // 修改生效了！
+}
+
+func modifyMatrixByPointer(mat *[2][3]int) {
+	// 修改原数组
+	(*mat)[0][0] = 100
+	mat[1][2] = 600 // 自动解引用
+
+	fmt.Println("函数内修改后的 matrix:")
+	printMatrix(*mat)
+}
+
+// 切片传递
+func slicePassing() {
+	// =================================
+	// 推荐：使用切片而不是数组
+	// 切片是引用类型，传递时不会复制底层数据
+	// =================================
+
+	// 创建数组
+	arr := [5]int{1, 2, 3, 4, 5}
+
+	// 转换为切片
+	slice := arr[:] // 引用整个数组
+
+	fmt.Println("调用前 slice:", slice)
+
+	// 传递切片
+	modifySlice(slice)
+
+	fmt.Println("调用后 slice:", slice) // 修改生效！
+	fmt.Println("原数组 arr:", arr)     // 数组也被修改了！
+}
+
+func modifySlice(s []int) {
+	s[0] = 100
+	s[2] = 300
+
+	// 注意：可以追加元素
+	// s = append(s, 6)  // 这会创建新切片，需要返回
+
+	fmt.Println("函数内 slice:", s)
+}
+
+// =================================
+// 传递多维切片
+// =================================
+func multiSlicePassing() {
+	// 创建二维切片
+	matrix := [][]int{
+		{1, 2, 3},
+		{4, 5, 6},
+		{7, 8, 9},
+	}
+
+	fmt.Println("调用前 matrix:")
+	for _, row := range matrix {
+		fmt.Println(row)
+	}
+
+	// 传递二维切片
+	modifyMultiSlice(matrix)
+
+	fmt.Println("调用后 matrix:")
+	for _, row := range matrix {
+		fmt.Println(row) // 修改生效！
+	}
+}
+
+func modifyMultiSlice(mat [][]int) {
+	// 修改元素
+	mat[0][0] = 100
+	mat[1][2] = 600
+
+	// 甚至可以修改行
+	mat[2] = []int{700, 800, 900}
+
+	fmt.Println("函数内修改后的 matrix:")
+	for _, row := range mat {
+		fmt.Println(row)
+	}
+}
 func main() {
 	//println(a1, b1, c1)
 	//var a int = 4
@@ -851,5 +1028,10 @@ func main() {
 	//makeInitialization()
 	//compositeLiterals()
 	//trapMultipleReturn()
-	bestPractices()
+	//bestPractices()
+	//basicArrayPassing()
+	//multiArrayPassing()
+	//arrayPointerPassing()
+	//slicePassing()
+	multiSlicePassing()
 }
