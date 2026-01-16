@@ -1000,6 +1000,131 @@ func modifyMultiSlice(mat [][]int) {
 		fmt.Println(row)
 	}
 }
+func variableLengthArrays() {
+	// =================================
+	// Go 中数组长度是类型的一部分
+	// 不同长度的数组是不同的类型
+	// 使用切片来处理可变长度
+	// =================================
+
+	// 错误：不能将不同长度的数组传递给同一个函数
+	arr3 := [3]int{1, 2, 3}
+	arr5 := [5]int{1, 2, 3, 4, 5}
+	//printSlice(arr3)  // 需要 printArray3
+	//printSlice(arr5)  // 需要 printArray5
+
+	printArray3(arr3) // 需要 printArray3
+	printArray5(arr5) // 需要 printArray5
+
+	// 正确：使用切片
+	slice3 := []int{1, 2, 3}
+	slice5 := []int{1, 2, 3, 4, 5}
+
+	printSlice(slice3) // 可以处理任意长度
+	printSlice(slice5)
+}
+
+// 可以处理任意长度的切片
+func printSlice(s []int) {
+	fmt.Println("切片长度:", len(s), "容量:", cap(s))
+	for i, v := range s {
+		fmt.Printf("s[%d] = %d\n", i, v)
+	}
+}
+
+// 如果必须使用数组，需要为每个长度写一个函数
+func printArray3(arr [3]int) {
+	fmt.Println(arr)
+}
+
+func printArray5(arr [5]int) {
+	fmt.Println(arr)
+}
+
+// /性能考虑和最佳实践
+func performanceConsideration() {
+	// =================================
+	// 性能测试：数组 vs 切片传递
+	// =================================
+
+	// 大数组（1MB）
+	var bigArray [1000000]int // 约 8MB
+
+	// 测试值传递（数组）
+	start := time.Now()
+	passByValue(bigArray)
+	fmt.Printf("值传递耗时: %v\n", time.Since(start))
+
+	// 测试指针传递
+	start = time.Now()
+	passByPointer(&bigArray)
+	fmt.Printf("指针传递耗时: %v\n", time.Since(start))
+
+	// 测试切片传递
+	bigSlice := bigArray[:]
+	start = time.Now()
+	passBySlice(bigSlice)
+	fmt.Printf("切片传递耗时: %v\n", time.Since(start))
+}
+
+func passByValue(arr [1000000]int) {
+	// 这里会复制整个数组（8MB）
+	_ = arr[0]
+}
+
+func passByPointer(arr *[1000000]int) {
+	// 只传递指针（8字节）
+	_ = arr[0]
+}
+
+func passBySlice(s []int) {
+	// 切片头部（24字节）
+	_ = s[0]
+}
+
+// =================================
+// 最佳实践建议
+// =================================
+func bestPractices2() {
+	// 建议1：小数组可以直接传递
+	smallArray := [3]int{1, 2, 3}
+	processSmallArray(smallArray) // 复制开销小，没问题
+
+	// 建议2：大数组使用指针或切片
+	largeArray := [10000]int{}
+
+	// 方式A：传递指针（明确表示会修改）
+	processLargeArrayByPointer(&largeArray)
+
+	// 方式B：传递切片（更灵活）
+	processLargeArrayBySlice(largeArray[:])
+
+	// 建议3：多维数组使用切片
+	// 而不是 [N][M]int，使用 [][]int
+	matrix := make([][]int, 3)
+	for i := range matrix {
+		matrix[i] = make([]int, 3)
+	}
+
+	processMatrix(matrix)
+}
+
+func processSmallArray(arr [3]int) {
+	// 处理小数组
+}
+
+func processLargeArrayByPointer(arr *[10000]int) {
+	// 通过指针修改
+}
+
+func processLargeArrayBySlice(s []int) {
+	// 通过切片处理
+}
+
+func processMatrix(mat [][]int) {
+	// 处理二维切片
+}
+
 func main() {
 	//println(a1, b1, c1)
 	//var a int = 4
@@ -1033,5 +1158,8 @@ func main() {
 	//multiArrayPassing()
 	//arrayPointerPassing()
 	//slicePassing()
-	multiSlicePassing()
+	//multiSlicePassing()
+	//variableLengthArrays()
+	//bestPractices2()
+	performanceConsideration()
 }
