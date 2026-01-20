@@ -1125,7 +1125,7 @@ func processMatrix(mat [][]int) {
 	// 处理二维切片
 }
 
-func main() {
+func main5() {
 	//println(a1, b1, c1)
 	//var a int = 4
 	//var b int32
@@ -1162,4 +1162,197 @@ func main() {
 	//variableLengthArrays()
 	//bestPractices2()
 	performanceConsideration()
+}
+
+// 指针
+func main() {
+	//var a int = 20 /* 声明实际变量 */
+	//var ip *int    /* 声明指针变量 */
+	//
+	//ip = &a /* 指针变量的存储地址 */
+	//
+	//fmt.Printf("a 变量的地址是: %x\n", &a)
+	//
+	///* 指针变量的存储地址 */
+	//fmt.Printf("ip 变量储存的指针地址: %x\n", ip)
+	//
+	///* 使用指针访问值 */
+	//fmt.Printf("*ip 变量的值: %d\n", *ip)
+
+	//pointArray()
+	//pointerArrayOperations()
+	//structPointerArray()
+	//dynamicPointerArray()
+	functionExamples()
+}
+
+// 指针数组与函数
+// 修改指针数组中的值
+func modifyPointerArray(arr [3]*int, multiplier int) {
+	for i := 0; i < len(arr); i++ {
+		if arr[i] != nil {
+			*arr[i] *= multiplier
+		}
+	}
+}
+
+// 返回指针数组
+func createPointerArray(values []int) []*int {
+	ptrs := make([]*int, len(values))
+	for i := range values {
+		ptrs[i] = &values[i]
+	}
+	return ptrs
+}
+
+func functionExamples() {
+	fmt.Println("\n=== 5. 指针数组与函数 ===")
+
+	// 函数修改指针数组
+	vals := [3]int{5, 10, 15}
+	var ptrArr [3]*int
+	for i := range vals {
+		ptrArr[i] = &vals[i]
+	}
+
+	fmt.Println("修改前:", *ptrArr[0], *ptrArr[1], *ptrArr[2])
+	modifyPointerArray(ptrArr, 2)
+	fmt.Println("修改后:", *ptrArr[0], *ptrArr[1], *ptrArr[2])
+
+	// 函数返回指针数组
+	newValues := []int{50, 100, 150, 200}
+	newPtrArr := createPointerArray(newValues)
+
+	fmt.Println("\n函数返回的指针数组:")
+	for i, ptr := range newPtrArr {
+		fmt.Printf("  [%d]: %d\n", i, *ptr)
+	}
+}
+
+// 动态数组与指针
+func dynamicPointerArray() {
+	fmt.Println("\n=== 4. 动态数组与指针 ===")
+
+	// 使用切片创建动态指针数组
+	size := 3
+	dynamicPtrs := make([]*int, size)
+
+	// 分配值
+	values := []int{100, 200, 300}
+	for i := 0; i < size; i++ {
+		dynamicPtrs[i] = &values[i]
+	}
+
+	fmt.Println("动态指针数组:")
+	for i, ptr := range dynamicPtrs {
+		fmt.Printf("  索引 %d: 值=%d\n", i, *ptr)
+	}
+
+	// 追加新元素
+	newValue := 400
+	dynamicPtrs = append(dynamicPtrs, &newValue)
+
+	fmt.Println("\n追加后:")
+	for i, ptr := range dynamicPtrs {
+		fmt.Printf("  索引 %d: 值=%d\n", i, *ptr)
+	}
+}
+func pointArray() {
+	fmt.Println("=== 1. 指针数组基本声明 ===")
+
+	// 普通数组
+	var arr = [5]int{10, 20, 30, 40, 50}
+
+	// 指针数组 - 存储int类型指针的数组
+	var ptrArr [5]*int
+
+	// 将数组中每个元素的地址赋给指针数组
+	for i := 0; i < len(arr); i++ {
+		ptrArr[i] = &arr[i]
+	}
+
+	fmt.Printf("原始数组: %v\n", arr)
+	fmt.Printf("指针数组内容: %v\n", ptrArr)
+
+	// 通过指针访问值
+	for i := 0; i < len(ptrArr); i++ {
+		fmt.Printf("ptrArr[%d] = %p, *ptrArr[%d] = %d\n",
+			i, ptrArr[i], i, *ptrArr[i])
+	}
+}
+
+// 指针数组的初始化与操作
+func pointerArrayOperations() {
+	fmt.Println("\n=== 2. 指针数组的初始化与操作 ===")
+
+	// 方法1: 声明后逐个赋值
+	var ptrArr1 [3]*int
+	a, b, c := 1, 2, 3
+	ptrArr1[0] = &a
+	ptrArr1[1] = &b
+	ptrArr1[2] = &c
+
+	// 方法2: 直接初始化
+	x, y, z := 10, 20, 30
+	ptrArr2 := [3]*int{&x, &y, &z}
+
+	fmt.Println("ptrArr1 指向的值:", *ptrArr1[0], *ptrArr1[1], *ptrArr1[2])
+	fmt.Println("ptrArr2 指向的值:", *ptrArr2[0], *ptrArr2[1], *ptrArr2[2])
+
+	// 通过指针修改值
+	*ptrArr1[0] = 100
+	fmt.Println("修改后 a 的值:", a)
+
+	// 指针数组的遍历
+	fmt.Println("\n遍历 ptrArr2:")
+	for index, ptr := range ptrArr2 {
+		fmt.Printf("索引 %d: 指针=%p, 值=%d\n", index, ptr, *ptr)
+	}
+}
+
+// 结构体指针数组
+type Person struct {
+	Name string
+	Age  int
+}
+
+func structPointerArray() {
+	fmt.Println("\n=== 3. 结构体指针数组 ===")
+
+	// 创建结构体指针数组
+	people := [3]*Person{
+		&Person{"Alice", 25},
+		&Person{"Bob", 30},
+		&Person{"Charlie", 35},
+	}
+
+	// 访问和修改
+	fmt.Println("初始人员信息:")
+	for i, p := range people {
+		fmt.Printf("  %d: %s, %d岁\n", i, p.Name, p.Age)
+		//  fmt.Println((*p).Name, (*p).Age)     // 显式解引用 ✅
+	}
+
+	// 修改结构体内容
+	people[0].Age = 26
+	people[1] = &Person{"David", 28}
+
+	fmt.Println("\n修改后的人员信息:")
+	for i, p := range people {
+		fmt.Printf("  %d: %s, %d岁\n", i, p.Name, p.Age)
+	}
+
+	// 检查nil指针
+	var personArr [2]*Person
+	personArr[0] = &Person{"Eve", 22}
+	// personArr[1] 是 nil
+
+	fmt.Println("\n检查nil指针:")
+	for i, p := range personArr {
+		if p != nil {
+			fmt.Printf("  personArr[%d]: %s\n", i, p.Name)
+		} else {
+			fmt.Printf("  personArr[%d]: nil指针\n", i)
+		}
+	}
 }
