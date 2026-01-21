@@ -1165,7 +1165,7 @@ func main5() {
 }
 
 // 指针
-func main() {
+func main6() {
 	//var a int = 20 /* 声明实际变量 */
 	//var ip *int    /* 声明指针变量 */
 	//
@@ -1355,4 +1355,145 @@ func structPointerArray() {
 			fmt.Printf("  personArr[%d]: nil指针\n", i)
 		}
 	}
+}
+
+// 结构体
+type Books struct {
+	title   string
+	author  string
+	subject string
+	book_id int
+}
+
+func main7() {
+	var Book1 Books /* 声明 Book1 为 Books 类型 */
+	var Book2 Books /* 声明 Book2 为 Books 类型 */
+
+	/* book 1 描述 */
+	Book1.title = "Go 语言"
+	Book1.author = "edu.aliyun.com"
+	Book1.subject = "Go 语言教程"
+	Book1.book_id = 6495407
+
+	/* book 2 描述 */
+	Book2.title = "Python 教程"
+	Book2.author = "edu.aliyun.com"
+	Book2.subject = "Python 语言教程"
+	Book2.book_id = 6495700
+
+	/* 打印 Book1 信息 */
+	fmt.Printf("Book 1 title : %s\n", Book1.title)
+	fmt.Printf("Book 1 author : %s\n", Book1.author)
+	fmt.Printf("Book 1 subject : %s\n", Book1.subject)
+	fmt.Printf("Book 1 book_id : %d\n", Book1.book_id)
+
+	/* 打印 Book2 信息 */
+	fmt.Printf("Book 2 title : %s\n", Book2.title)
+	fmt.Printf("Book 2 author : %s\n", Book2.author)
+	fmt.Printf("Book 2 subject : %s\n", Book2.subject)
+	fmt.Printf("Book 2 book_id : %d\n", Book2.book_id)
+
+	/* 打印 Book1 信息 */
+	printBook(Book1)
+
+	/* 打印 Book2 信息 */
+	printBook(Book2)
+}
+func printBook(book Books) {
+	fmt.Printf("Book title : %s\n", book.title)
+	fmt.Printf("Book author : %s\n", book.author)
+	fmt.Printf("Book subject : %s\n", book.subject)
+	fmt.Printf("Book book_id : %d\n", book.book_id)
+}
+
+type Books1 struct {
+	title   string
+	author  string
+	subject string
+	book_id int
+}
+
+func main8() {
+	var Book1 Books1 /* Declare Book1 of type Book */
+	var Book2 Books1 /* Declare Book2 of type Book */
+
+	/* book 1 描述 */
+	Book1.title = "Go 语言"
+	Book1.author = "edu.aliyun.com"
+	Book1.subject = "Go 语言教程"
+	Book1.book_id = 6495407
+
+	/* book 2 描述 */
+	Book2.title = "Python 教程"
+	Book2.author = "edu.aliyun.com"
+	Book2.subject = "Python 语言教程"
+	Book2.book_id = 6495700
+
+	/* 打印 Book1 信息 */
+	printBook1(&Book1)
+
+	/* 打印 Book2 信息 */
+	printBook1(&Book2)
+}
+func printBook1(book *Books1) {
+	fmt.Printf("Book title : %s\n", book.title)
+	fmt.Printf("Book title : %s\n", (*book).title)
+	fmt.Printf("Book author : %s\n", book.author)
+	fmt.Printf("Book subject : %s\n", book.subject)
+	fmt.Printf("Book book_id : %d\n", book.book_id)
+}
+func main9() {
+	/* 创建切片 */
+	numbers := []int{0, 1, 2, 3, 4, 5, 6, 7, 8}
+	printSlice2(numbers)
+
+	/* 打印原始切片 */
+	fmt.Println("numbers ==", numbers)
+
+	/* 打印子切片从索引1(包含) 到索引4(不包含)*/
+	fmt.Println("numbers[1:4] ==", numbers[1:4])
+
+	/* 默认下限为 0*/
+	fmt.Println("numbers[:3] ==", numbers[:3])
+
+	/* 默认上限为 len(s)*/
+	fmt.Println("numbers[4:] ==", numbers[4:])
+
+	numbers1 := make([]int, 0, 5)
+	printSlice2(numbers1)
+
+	/* 打印子切片从索引  0(包含) 到索引 2(不包含) */
+	number2 := numbers[:2]
+	printSlice2(number2)
+
+	/* 打印子切片从索引 2(包含) 到索引 5(不包含) */
+	number3 := numbers[2:5]
+	printSlice2(number3)
+}
+func printSlice2(x []int) {
+	fmt.Printf("len=%d cap=%d slice=%v\n", len(x), cap(x), x)
+}
+
+func main() {
+	var numbers []int
+	printSlice(numbers)
+
+	/* 允许追加空切片 */
+	numbers = append(numbers, 0)
+	printSlice(numbers)
+
+	/* 向切片添加一个元素 */
+	numbers = append(numbers, 1)
+	printSlice(numbers)
+
+	/* 同时添加多个元素 */
+	numbers = append(numbers, 2, 3, 4)
+	printSlice(numbers)
+
+	/* 创建切片 numbers1 是之前切片的两倍容量*/
+	numbers1 := make([]int, len(numbers), (cap(numbers))*2)
+
+	/* 拷贝 numbers 的内容到 numbers1 */
+	copy(numbers1, numbers)
+	printSlice(numbers1)
 }
