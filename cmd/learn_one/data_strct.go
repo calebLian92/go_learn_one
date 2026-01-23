@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"reflect"
+	"strconv"
 	"time"
 	"unsafe"
 )
@@ -1474,7 +1476,7 @@ func printSlice2(x []int) {
 	fmt.Printf("len=%d cap=%d slice=%v\n", len(x), cap(x), x)
 }
 
-func main() {
+func main11() {
 	var numbers []int
 	printSlice(numbers)
 
@@ -1496,4 +1498,283 @@ func main() {
 	/* 拷贝 numbers 的内容到 numbers1 */
 	copy(numbers1, numbers)
 	printSlice(numbers1)
+}
+
+// range
+func main12() {
+	//这是我们使用range去求一个slice的和。使用数组跟这个很类似
+	nums := []int{2, 3, 4}
+	sum := 0
+	for _, num := range nums {
+		sum += num
+	}
+	fmt.Println("sum:", sum)
+	//在数组上使用range将传入index和值两个变量。上面那个例子我们不需要使用该元素的序号，所以我们使用空白符"_"省略了。有时侯我们确实需要知道它的索引。
+	for i, num := range nums {
+		if num == 3 {
+			fmt.Println("index:", i)
+		}
+	}
+	//range也可以用在map的键值对上。
+	kvs := map[string]string{"a": "apple", "b": "banana"}
+	for k, v := range kvs {
+		fmt.Printf("%s -> %s\n", k, v)
+	}
+	//range也可以用来枚举Unicode字符串。第一个参数是字符的索引，第二个是字符（Unicode的值）本身。
+	for i, c := range "go" {
+		fmt.Println(i, c)
+	}
+}
+func main13() {
+	var countryCapitalMap map[string]string
+	/* 创建集合 */
+	countryCapitalMap = make(map[string]string)
+
+	/* map 插入 key-value 对，各个国家对应的首都 */
+	countryCapitalMap["France"] = "Paris"
+	countryCapitalMap["Italy"] = "Rome"
+	countryCapitalMap["Japan"] = "Tokyo"
+	countryCapitalMap["India"] = "New Delhi"
+
+	/* 使用 key 输出 map 值 */
+	for country := range countryCapitalMap {
+		fmt.Println("Capital of", country, "is", countryCapitalMap[country])
+	}
+	/* 使用 key 输出 map 值 */
+	for country, capital := range countryCapitalMap {
+		fmt.Println("Capital of", country, "is", capital)
+	}
+
+	/* 查看元素在集合中是否存在 */
+	captial, ok := countryCapitalMap["United States"]
+	/* 如果 ok 是 true, 则存在，否则不存在 */
+	if ok {
+		fmt.Println("Capital of United States is", captial)
+	} else {
+		fmt.Println("Capital of United States is not present")
+	}
+}
+func main14() {
+	/* 创建 map */
+	countryCapitalMap := map[string]string{"France": "Paris", "Italy": "Rome", "Japan": "Tokyo", "India": "New Delhi"}
+
+	fmt.Println("原始 map")
+
+	/* 打印 map */
+	for country := range countryCapitalMap {
+		fmt.Println("Capital of", country, "is", countryCapitalMap[country])
+	}
+
+	/* 删除元素 */
+	delete(countryCapitalMap, "France")
+	fmt.Println("Entry for France is deleted")
+
+	fmt.Println("删除元素后 map")
+
+	/* 打印 map */
+	for country := range countryCapitalMap {
+		fmt.Println("Capital of", country, "is", countryCapitalMap[country])
+	}
+}
+
+// 斐波那契
+func fibonaci(n int) int {
+	if n < 2 {
+		return n
+	}
+	return fibonaci(n-2) + fibonaci(n-1)
+}
+func main15() {
+	var i int
+	for i = 0; i < 10; i++ {
+		fmt.Printf("%d\t", fibonaci(i))
+	}
+}
+func main() {
+	var sum int = 17
+	var count int = 5
+	var mean float32
+
+	mean = float32(sum) / float32(count)
+	fmt.Printf("mean 的值为: %.2f\n", mean)
+	//referenceAndInterfaceTypes()
+	//explicitConversion()
+	//stringConversion()
+	typeAssertion()
+}
+
+// 断言
+func typeAssertion() {
+	fmt.Println("\n=== 3. 接口类型断言 ===")
+
+	// 语法: value, ok := interfaceValue.(Type)
+
+	var any interface{} = "Hello, Go!"
+
+	// 3.1 安全类型断言
+	if str, ok := any.(string); ok {
+		fmt.Printf("断言成功: 是字符串, 值: %s\n", str)
+	} else {
+		fmt.Println("断言失败: 不是字符串")
+	}
+
+	// 3.2 另一种写法（不安全，可能panic）
+	any = 42
+	// num := any.(int)  // 如果any不是int，会panic
+
+	// 3.3 处理多种类型
+	processInterface(42)
+	processInterface("Hello")
+	processInterface(3.14)
+
+	// 3.4 类型switch
+	fmt.Println("\n类型switch:")
+	var values []interface{} = []interface{}{42, "hello", 3.14, true}
+	for _, v := range values {
+		switch val := v.(type) {
+		case int:
+			fmt.Printf("int: %d\n", val)
+		case string:
+			fmt.Printf("string: %s\n", val)
+		case float64:
+			fmt.Printf("float64: %.2f\n", val)
+		default:
+			fmt.Printf("未知类型: %T\n", val)
+		}
+	}
+}
+
+func processInterface(v interface{}) {
+	switch v := v.(type) {
+	case int:
+		fmt.Printf("处理整数: %d × 2 = %d\n", v, v*2)
+	case string:
+		fmt.Printf("处理字符串: 长度 = %d\n", len(v))
+	default:
+		fmt.Printf("不支持的类型: %T\n", v)
+	}
+}
+
+// 字符串转化
+func stringConversion() {
+	fmt.Println("\n=== 2. 字符串转换 ===")
+
+	// 2.1 字符串 ↔ 字节切片
+	str := "Hello, 世界"
+
+	// 字符串转字节切片
+	bytes := []byte(str)
+	fmt.Printf("字符串 → 字节切片: %v\n", bytes)
+	fmt.Printf("长度: 字符串=%d, 字节切片=%d\n", len(str), len(bytes))
+
+	// 字节切片转字符串
+	str2 := string(bytes)
+	fmt.Printf("字节切片 → 字符串: %s\n", str2)
+
+	// 2.2 字符串 ↔ 符文切片
+	runes := []rune(str)
+	fmt.Printf("\n字符串 → 符文切片: %v\n", runes)
+	fmt.Printf("符文数: %d (中文字符占1个符文)\n", len(runes))
+
+	str3 := string(runes)
+	fmt.Printf("符文切片 → 字符串: %s\n", str3)
+
+	// 2.3 数值 ↔ 字符串（使用strconv包）
+	num := 42
+	numStr := strconv.Itoa(num) // int to string
+	fmt.Printf("\nint(%d) → 字符串: %s (类型: %T)\n", num, numStr, numStr)
+
+	// 字符串转数值
+	strNum := "123"
+	parsedNum, err := strconv.Atoi(strNum)
+	if err == nil {
+		fmt.Printf("字符串(\"%s\") → int: %d\n", strNum, parsedNum)
+	}
+
+	// 浮点数转换
+	pi := 3.14159
+	piStr := strconv.FormatFloat(pi, 'f', 2, 64)
+	fmt.Printf("float64(%.5f) → 字符串: %s\n", pi, piStr)
+
+	pi2, _ := strconv.ParseFloat("3.14", 64)
+	fmt.Printf("字符串(\"3.14\") → float64: %.2f\n", pi2)
+}
+
+// 显示转化
+func explicitConversion() {
+	fmt.Println("\n=== 1. 显式类型转换 ===")
+
+	// 语法: T(expression)
+
+	// 1.1 数值类型之间的转换
+	var i int = 42
+	var f float64 = float64(i)
+	var u uint = uint(f)
+
+	fmt.Printf("int(%d) → float64: %.2f\n", i, f)
+	fmt.Printf("float64(%.2f) → uint: %d\n", f, u)
+
+	// 1.2 整数和浮点数转换
+	var x float64 = 3.14
+	var y int = int(x) // 截断小数部分
+	fmt.Printf("float64(%.2f) → int: %d (截断)\n", x, y)
+
+	// 1.3 不同大小的整数转换
+	var a int16 = 255
+	var b int32 = int32(a)
+	var c int8 = int8(a) // 可能溢出
+	fmt.Printf("int16(%d) → int32: %d\n", a, b)
+	fmt.Printf("int16(%d) → int8: %d (溢出!)\n", a, c)
+
+	// 1.4 字节和整数
+	var ch byte = 'A'
+	var ascii int = int(ch)
+	fmt.Printf("byte('%c') → int: %d\n", ch, ascii)
+
+	// 1.5 符文和整数
+	var r rune = '中'
+	var codePoint int = int(r)
+	fmt.Printf("rune('%c') → int: %d (Unicode码点)\n", r, codePoint)
+}
+func referenceAndInterfaceTypes() {
+	fmt.Println("\n=== 引用类型和接口类型 ===")
+
+	// 3.1 引用类型（切片、映射、通道、函数、指针）
+	//slice := []int{1, 2, 3}    // 引用类型
+	//m := map[string]int{}      // 引用类型
+	//ch := make(chan int)       // 引用类型
+
+	// 3.2 指针类型
+	var x int = 10
+	var ptr *int = &x
+	//var ptrToSlice *[]int = &slice
+
+	// 3.3 函数类型
+	var fn func(int, int) int
+	fn = func(a, b int) int {
+		return a + b
+	}
+
+	// 3.4 接口类型
+	var any interface{} = "可以是任何类型"
+	//var reader interface {
+	//	Read([]byte) (int, error)
+	//}
+
+	// 3.5 类型别名和自定义类型
+	type MyInt int     // 自定义类型，新类型
+	type YourInt = int // 类型别名，同一种类型
+
+	var mi MyInt = 42
+	var yi YourInt = 42
+
+	fmt.Printf("指针: %T, 指向的值: %d\n", ptr, *ptr)
+	fmt.Printf("函数: %T\n", fn)
+	fmt.Printf("接口: %T, 值: %v\n", any, any)
+	fmt.Printf("自定义类型: %T, 类型别名: %T\n", mi, yi)
+
+	// 检查类型
+	fmt.Println("\n类型检查:")
+	fmt.Printf("MyInt 底层类型: %v\n", reflect.TypeOf(mi).Kind())
+	fmt.Printf("YourInt 底层类型: %v\n", reflect.TypeOf(yi).Kind())
 }
