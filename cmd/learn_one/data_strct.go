@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"learn-one/cmd/server"
 	"reflect"
 	"strconv"
 	"time"
@@ -1590,7 +1591,7 @@ func main15() {
 		fmt.Printf("%d\t", fibonaci(i))
 	}
 }
-func main() {
+func main17() {
 	var sum int = 17
 	var count int = 5
 	var mean float32
@@ -1600,7 +1601,58 @@ func main() {
 	//referenceAndInterfaceTypes()
 	//explicitConversion()
 	//stringConversion()
-	typeAssertion()
+	//typeAssertion()
+	//customTypeConversion()
+	//pointerConversion()
+	mapSliceConversionLimits()
+}
+func mapSliceConversionLimits() {
+	fmt.Println("\n=== 7. map 和 slice 的转换限制 ===")
+
+	// 7.1 切片不能直接转换类型
+	intSlice := []int{1, 2, 3}
+	// floatSlice := []float64(intSlice)  // 错误
+
+	// 需要逐个元素转换
+	floatSlice := make([]float64, len(intSlice))
+	for i, v := range intSlice {
+		floatSlice[i] = float64(v)
+	}
+	fmt.Printf("[]int%v → []float64%v\n", intSlice, floatSlice)
+
+	// 7.2 map 键值类型转换
+	m1 := map[string]int{"a": 1, "b": 2}
+	// m2 := map[interface{}]int(m1)  // 错误
+
+	// 需要创建新的map
+	m2 := make(map[interface{}]int)
+	for k, v := range m1 {
+		m2[k] = v
+	}
+	fmt.Printf("map[string]int%v → map[interface{}]int%v\n", m1, m2)
+}
+func pointerConversion() {
+	fmt.Println("\n=== 5. 指针类型转换 ===")
+
+	// 5.1 unsafe.Pointer 转换
+	var i int = 42
+	//var f float64 = 3.14
+
+	// 普通指针不能直接转换类型
+	// var p *float64 = (*float64)(&i)  // 编译错误
+
+	pi := &i
+	pf := (*float64)(unsafe.Pointer(pi))
+	fmt.Printf("int指针 %p → float64指针 %p\n", pi, pf)
+	fmt.Printf("危险！原值 %d，转换后值 %f\n", i, *pf)
+
+	// 5.2 不同结构体指针转换
+	type A struct{ x int }
+	type B struct{ x int }
+
+	a := A{x: 42}
+	pb := (*B)(unsafe.Pointer(&a))
+	fmt.Printf("A{x:%d} → B{x:%d}\n", a.x, pb.x)
 }
 
 // 断言
@@ -1777,4 +1829,189 @@ func referenceAndInterfaceTypes() {
 	fmt.Println("\n类型检查:")
 	fmt.Printf("MyInt 底层类型: %v\n", reflect.TypeOf(mi).Kind())
 	fmt.Printf("YourInt 底层类型: %v\n", reflect.TypeOf(yi).Kind())
+}
+
+func customTypeConversion() {
+	fmt.Println("\n=== 4. 自定义类型转换 ===")
+
+	// 4.1 类型别名 - 可以直接转换
+	type Celsius float64
+	type Fahrenheit float64
+
+	var c Celsius = 100
+	var f Fahrenheit = Fahrenheit(c*9/5 + 32)
+
+	fmt.Printf("%.2f°C = %.2f°F\n", c, f)
+
+	// 4.2 底层类型相同但需要显式转换
+	type Meter float64
+	type Kilometer float64
+
+	var m Meter = 1000
+	var km Kilometer = Kilometer(m / 1000)
+	fmt.Printf("%.2f 米 = %.2f 千米\n", m, km)
+
+	// 4.3 结构体类型转换（通常不行，除非字段完全相同）
+	type Point1 struct{ X, Y int }
+	type Point2 struct{ X, Y int }
+
+	p1 := Point1{10, 20}
+	// p2 := Point2(p1)  // 错误：不能直接转换
+
+	// 需要显式转换每个字段
+	p2 := Point2{p1.X, p1.Y}
+	fmt.Printf("Point1%v → Point2%v\n", p1, p2)
+}
+
+// 接口
+type Phone interface {
+	call()
+}
+type NokiaPhone struct{}
+
+func (nokiaPhone NokiaPhone) call() {
+	fmt.Println("I am Nokia, I can call you!")
+}
+
+type IPhone struct{}
+
+func (iPhone IPhone) call() {
+	fmt.Println("I am iPhone, I can call you!")
+}
+func main18() {
+	var phone Phone
+
+	phone = new(NokiaPhone)
+	phone.call()
+
+	phone = new(IPhone)
+	phone.call()
+}
+
+// main.go - 完整版本 支付
+
+// 定义接口（所有包都能看到）
+type PaymentProcessor interface {
+	ProcessPayment(amount float64) error
+}
+
+type OrderManager interface {
+	UpdateOrderStatus(orderID string, status string) error
+	OrderPaid(orderID string) error
+}
+
+// OrderServiceAdapter 适配器，让 order.OrderService 实现 OrderManager 接口
+type OrderServiceAdapter struct {
+	orderService *server.OrderService
+}
+
+func (a *OrderServiceAdapter) UpdateOrderStatus(orderID string, status string) error {
+	return a.orderService.UpdateOrderStatus(orderID, status)
+}
+
+func (a *OrderServiceAdapter) OrderPaid(orderID string) error {
+	return a.orderService.OrderPaid(orderID)
+}
+
+// PaymentServiceAdapter 适配器，让 payment.PaymentService 实现 PaymentProcessor 接口
+type PaymentServiceAdapter struct {
+	paymentService *server.PaymentService
+}
+
+func (a *PaymentServiceAdapter) ProcessPayment(amount float64) error {
+	return a.paymentService.ProcessPayment(amount)
+}
+
+func main19() {
+	fmt.Println("=== 开始演示双向依赖解决方案 ===")
+
+	// 1. 创建基础服务实例
+	baseOrderService := server.NewOrderService()
+	basePaymentService := server.NewPaymentService()
+
+	// 2. 创建适配器
+	orderAdapter := &OrderServiceAdapter{orderService: baseOrderService}
+	paymentAdapter := &PaymentServiceAdapter{paymentService: basePaymentService}
+
+	// 3. 设置双向依赖
+	// 订单服务需要支付处理器
+	baseOrderService.SetPaymentProcessor(paymentAdapter)
+	//baseOrderService.SetPaymentProcessor(basePaymentService)
+	// 支付服务需要订单管理器
+	basePaymentService.SetOrderManager(orderAdapter)
+
+	fmt.Println("\n=== 测试创建订单 ===")
+	// 4. 使用服务
+	err := baseOrderService.CreateOrder(100.0)
+	if err != nil {
+		fmt.Printf("创建订单失败: %v\n", err)
+	} else {
+		fmt.Println("创建订单成功!")
+	}
+
+	fmt.Println("\n=== 测试直接调用支付 ===")
+	err = basePaymentService.ProcessPayment(50.0)
+	if err != nil {
+		fmt.Printf("支付失败: %v\n", err)
+	} else {
+		fmt.Println("支付成功!")
+	}
+}
+
+// 不适用适配器
+// 订单服务接口
+type OrderService interface {
+	CreateOrder() error
+	UpdateOrderStatus(orderID string, status string) error
+}
+
+// 支付服务接口
+type PaymentService interface {
+	ProcessPayment(amount float64) error
+}
+
+// OrderServiceImpl 实现
+type OrderServiceImpl struct {
+	paymentService PaymentService
+}
+
+func (o *OrderServiceImpl) CreateOrder() error {
+	fmt.Println("创建订单")
+	return o.paymentService.ProcessPayment(100.0)
+}
+
+func (o *OrderServiceImpl) UpdateOrderStatus(orderID string, status string) error {
+	fmt.Printf("更新订单状态: %s -> %s\n", orderID, status)
+	return nil
+}
+
+func (o *OrderServiceImpl) SetPaymentService(ps PaymentService) {
+	o.paymentService = ps
+}
+
+// PaymentServiceImpl 实现
+type PaymentServiceImpl struct {
+	orderService OrderService
+}
+
+func (p *PaymentServiceImpl) ProcessPayment(amount float64) error {
+	fmt.Printf("处理支付: %.2f\n", amount)
+	return p.orderService.UpdateOrderStatus("order_123", "paid")
+}
+
+func (p *PaymentServiceImpl) SetOrderService(os OrderService) {
+	p.orderService = os
+}
+
+func main() {
+	// 创建实例
+	orderSvc := &OrderServiceImpl{}
+	paymentSvc := &PaymentServiceImpl{}
+
+	// 关键：相互注入
+	orderSvc.SetPaymentService(paymentSvc) // PaymentServiceImpl 实现了 PaymentService
+	paymentSvc.SetOrderService(orderSvc)   // OrderServiceImpl 实现了 OrderService
+
+	// 使用
+	orderSvc.CreateOrder()
 }
