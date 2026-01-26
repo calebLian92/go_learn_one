@@ -1929,7 +1929,7 @@ func main19() {
 	baseOrderService := server.NewOrderService()
 	basePaymentService := server.NewPaymentService()
 
-	// 2. 创建适配器
+	// 2. 创建适配器  orderService: baseOrderService    类型 ： 值
 	orderAdapter := &OrderServiceAdapter{orderService: baseOrderService}
 	paymentAdapter := &PaymentServiceAdapter{paymentService: basePaymentService}
 
